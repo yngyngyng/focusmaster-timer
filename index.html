@@ -1,0 +1,199 @@
+<!DOCTYLE html>
+  <html lang="en">
+
+  <head>
+    <style>
+      :root {
+        --background: #191919;
+        --main: rgba(255, 255, 255, 0.81);
+        --other: rgba(255, 255, 255, 0.5);
+      }
+
+      body {
+        background-color: var(--background);
+        font-family: monospace;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0 auto;
+      }
+
+      .timer-container {
+        text-align: center;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        max-width: 300px;
+      }
+
+      .countdown-svg {
+        width: 100%;
+        height: 100%;
+      }
+
+      #focus,
+      #break {
+        font-family: monospace;
+        background-color: transparent;
+        border: none;
+        color: var(--other);
+        padding: clamp(0px, 7vw, 10px) clamp(0px, 7vw, 20px);
+        text-decoration: none;
+        display: inline-block;
+        font-size: clamp(0px, 7vw, 20px);
+        margin: 10px 2px;
+        transition-duration: 0.4s;
+        cursor: pointer;
+        border-radius: 8px;
+      }
+
+      #focus:hover,
+      #break:hover {
+        color: var(--main);
+        text-shadow: 0px 0px 6px var(--main);
+        transform: scale(1.05);
+      }
+
+      #startButton {
+        font-family: monospace;
+        background-color: var(--main);
+        border: none;
+        color: var(--background);
+        padding: clamp(0px, 7vw, 10px) clamp(0px, 7vw, 20px);
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: clamp(0px, 7vw, 20px);
+        margin: 10px 2px;
+        transition-duration: 0.4s;
+        cursor: pointer;
+        border-radius: clamp(0px, 4vw, 8px);
+      }
+
+      #startButton:hover {
+        background-color: var(--other);
+        color: var(--main);
+        text-shadow: 0px 0px 6px rgba(255, 255, 255, 1);
+        transform: scale(1.05);
+      }
+
+      #startButton:active {
+        transform: scale(.95);
+      }
+
+      #startButton.clicked {
+        transform: scale(.1);
+      }
+
+      circle {
+        fill: none;
+        stroke: var(--main);
+        stroke-width: 4;
+        stroke-dasharray: 283;
+        stroke-dashoffset: 0;
+        transform: rotate(-90deg);
+        transform-origin: 50% 50%;
+        transition: stroke-dashoffset 1s linear;
+      }
+
+      .countdown-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: clamp(0px, 16vw, 49px);
+        font-weight: bold;
+        color: var(--main);
+      }
+      
+    </style>
+  </head>
+
+  <body>
+    <div class="timer-container">
+      <div class="topBar">
+        <button id="focus">breathe</button>
+        <button id="break">meditate</button>
+        <svg class="countdown-svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45"></circle></svg>
+        <div class="countdown-text"></div>
+        <button id="startButton">start</button>
+      </div>
+    </div>
+      <script>
+        const timerElement = document.querySelector('.countdown-text');
+        const startButton = document.getElementById('startButton');
+        const breakButton = document.getElementById('break');
+        const focusButton = document.getElementById('focus');
+        const circleElement = document.querySelector('circle');
+        var playing = false;
+        var startTime = 2 * 60;
+        var remember = startTime;
+        var timeleft = startTime;
+        let intervalId;
+        focusButton.style.color = 'rgba(255, 255, 255, 0.81)';
+
+        function formatTime(time) {
+          return time < 10 ? `0${time}` : time;
+        }
+        timerElement.innerText = `${formatTime(Math.floor(startTime / 60))}:${formatTime(startTime - Math.floor(startTime / 60) * 60)}`;
+
+        function countdown() {
+          timeleft = timeleft - 1;
+          let minutes = Math.floor(timeleft / 60);
+          let seconds = timeleft - minutes * 60;
+          let selected = "focus"
+          timerElement.innerText = `${formatTime(minutes)}:${formatTime(seconds)}`;
+          circleElement.style.strokeDashoffset = ((startTime - timeleft) / startTime) * 283;
+          if (timeleft < 0) {
+            clearInterval(intervalId);
+            timerElement.innerText = "nice job!";
+            resetTimer();
+          }
+        }
+
+        function startTimer() {
+          countdown();
+          intervalId = setInterval(countdown, 1000);
+        }
+
+        function pauseTimer() {
+          clearInterval(intervalId);
+        }
+
+        function resetTimer() {
+          pauseTimer();
+          playing = false;
+          startButton.innerText = "start";
+          timeleft = startTime;
+          timerElement.innerText = `${formatTime(Math.floor(startTime / 60))}:${formatTime(startTime - Math.floor(startTime / 60) * 60)}`;
+          circleElement.style.strokeDashoffset = 0;
+        }
+
+        function onClickFunction() {
+          if (playing === false) {
+            startButton.innerText = "pause";
+            playing = true;
+            startTimer();
+          } else {
+            startButton.innerText = "start";
+            playing = false;
+            pauseTimer();
+          }
+        }
+        startButton.addEventListener('click', onClickFunction);
+        breakButton.addEventListener("click", function() {
+          breakButton.style.color = 'rgba(255, 255, 255, 0.81)';
+          focusButton.style.color = 'rgba(255, 255, 255, 0.5)';
+          startTime = 60 * 10;
+          resetTimer();
+        });
+        focusButton.addEventListener("click", function() {
+          focusButton.style.color = 'rgba(255, 255, 255, 0.81)';
+          breakButton.style.color = 'rgba(255, 255, 255, 0.5)';
+          startTime = remember;
+          resetTimer();
+        });
+      </script>
+  </body>
+
+  </html>
